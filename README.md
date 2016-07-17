@@ -46,7 +46,14 @@ configure do
 end
 
 get '/' do
-  (authorized?) ? 'true' : 'false'
+ <<-EOS
+<html>
+<body>
+#{(authorized?) ? 'Authorized<br>' : ''}
+<a href="#{get_authentication_url}">sign in</a>
+</body>
+</html>
+EOS
 end
 
 get '/signout' do
