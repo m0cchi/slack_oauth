@@ -2,6 +2,12 @@
 
 oauth client library for sinatra
 
+# Coverage
+- Whether authorized with allowed team
+- authorized user's token(slack)
+- team id(slack) using the authorization
+- team name(slack) using the authorization
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -31,16 +37,16 @@ use Rack::Session::Cookie,
     :secret => 'change'
 
 configure do
-  set :slack_token, 'xxxxx-xxxxx-xxxx-xxxx'
-  set :slack_client_id, 'nnnnnn.nnnnn'
-  set :slack_secret_key, 'xxxxxxxxxxxxxxxxxx'
-  set :logined_uri, '/'
-  set :error_uri, '/'
+  set :slack_token, 'xxxxx-xxxxx-xxxx-xxxx' # required
+  set :slack_client_id, 'nnnnnn.nnnnn' # required
+  set :slack_secret_key, 'xxxxxxxxxxxxxxxxxx' # required
+  set :logined_uri, '/' # required if use register
+  set :error_uri, '/' # required if use register
   set :slack_redirect_uri, 'http://yourhost:4567/oauth'
   set :slack_team, 'your-team' # or nil
-  set :slack_allowed_teams, ['allowed team']
-  set :slack_scope, 'identify'
-  use Rack::Session::Cookie,
+  set :slack_allowed_teams, ['allowed team'] # required
+  set :slack_scope, 'identify' # required
+  use Rack::Session::Cookie, # slack_oauth use session
       :expire_after => 3600,
       :secret => 'change'
 end
