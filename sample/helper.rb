@@ -13,9 +13,8 @@ configure do
   set :slack_team, 'your-team' # or nil
   set :slack_allowed_teams, ['allowed team']
   set :slack_scope, 'identify'
-  use Rack::Session::Cookie,
-      :expire_after => 3600,
-      :secret => 'change'
+  use Rack::Session::Pool,
+      :expire_after => 3600
 end
 
 get '/your-path' do

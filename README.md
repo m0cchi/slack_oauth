@@ -8,6 +8,9 @@ oauth client library for sinatra
 - team id(slack) using the authorization
 - team name(slack) using the authorization
 
+# Caution
+don't use Rack::Session::Cookie
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -42,9 +45,8 @@ configure do
   set :slack_team, 'your-team' # or nil
   set :slack_allowed_teams, ['allowed team'] # required
   set :slack_scope, 'identify' # required
-  use Rack::Session::Cookie, # slack_oauth use session
-      :expire_after => 3600,
-      :secret => 'change'
+  use Rack::Session::Pool, # slack_oauth use session
+      :expire_after => 3600
 end
 
 get '/' do
