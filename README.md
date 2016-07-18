@@ -32,10 +32,6 @@ require 'slack_oauth'
 
 register SlackOauth::Driver
 
-use Rack::Session::Cookie,
-    :expire_after => 3600,
-    :secret => 'change'
-
 configure do
   set :slack_token, 'xxxxx-xxxxx-xxxx-xxxx' # required
   set :slack_client_id, 'nnnnnn.nnnnn' # required
