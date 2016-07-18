@@ -12,10 +12,16 @@ module SlackOauth
         http.use_ssl = true
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
         req = Net::HTTP::Post.new(uri.path)
-        req.set_form_data({client_id: settings.slack_client_id,
-                           client_secret: settings.slack_secret_key,
-                           code: code,
-                           redirect_uri: settings.slack_redirect_uri})
+
+        params = {client_id: settings.slack_client_id,
+                  client_secret: settings.slack_secret_key,
+                  code: code}
+
+        if has_settings(:slack_redirect_uri)
+          params[:redirect_uri] = settings.slack_redirect_uri
+        end
+          
+        req.set_form_data(params)
         res = JSON.parse(http.request(req).body)
         session[:authorized] = res['ok'] && settings.slack_allowed_teams.include?(res['team_name'])
         if session[:authorized]
@@ -34,19 +40,14 @@ module SlackOauth
       def get_params
         params = []
 
-        unless settings.slack_client_id.nil?
-          params << "client_id=#{settings.slack_client_id}"
-        end
+        params << "client_id=#{settings.slack_client_id}"
+        params << "scope=#{settings.slack_scope}"
 
-        unless settings.slack_team.nil?
+        if has_settings(:slack_team)
           params << "team=#{settings.slack_team}"
         end
 
-        unless settings.slack_scope.nil?
-          params << "scope=#{settings.slack_scope}"
-        end
-
-        unless settings.slack_redirect_uri.nil?
+        if has_settings(:slack_redirect_uri)
           params << "redirect_uri=#{settings.slack_redirect_uri}"
         end
         "?#{params.join('&')}"
@@ -54,6 +55,12 @@ module SlackOauth
 
       def get_authentication_url
         "https://slack.com/oauth/authorize#{get_params}"
+      end
+
+      private
+
+      def has_settings(name)
+        !!settings.methods.include?(name) && settings.send((name.to_s + '?').to_sym)
       end
 
     end
