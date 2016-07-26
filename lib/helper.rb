@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require 'net/https'
 require 'json'
+require 'securerandom'
 
 module SlackOauth
   module Driver
@@ -20,21 +21,27 @@ module SlackOauth
         if has_settings(:slack_redirect_uri)
           params[:redirect_uri] = settings.slack_redirect_uri
         end
-          
+
         req.set_form_data(params)
         res = JSON.parse(http.request(req).body)
-        session[:authorized] = res['ok'] && settings.slack_allowed_teams.include?(res['team_name'])
-        if session[:authorized]
+
+        session[:slack_authorized] = res['ok'] && settings.slack_allowed_teams.include?(res['team_name'])
+
+        if session[:slack_authorized]
           session[:slack_team] = res['team_name']
           session[:slack_access_token] = res['access_token']
           session[:slack_user_id] = res['user_id']
           session[:slack_team_id] = res['team_id']
         end
-        session[:authorized]
+        session[:slack_authorized]
       end
 
       def authorized?
-        session[:authorized]
+        session[:slack_authorized]
+      end
+
+      def validate_state(state)
+        session[:slack_state] == state
       end
 
       def get_params
@@ -50,6 +57,14 @@ module SlackOauth
         if has_settings(:slack_redirect_uri)
           params << "redirect_uri=#{settings.slack_redirect_uri}"
         end
+
+        @slack_state_generator ||= has_settings(:slack_state_generator) ?  settings.slack_state_generator : ->{
+          SecureRandom.hex(32)
+        }
+
+        session[:slack_state] = @slack_state_generator.call
+        params << "state=#{session[:slack_state]}"
+
         "?#{params.join('&')}"
       end
 

@@ -16,7 +16,7 @@ module SlackOauth
         elsif !params[:error].nil?
           redirect settings.error_uri
         elsif !params[:code].nil?
-          if authorize(params[:code])
+          if validate_state(params[:state]) && authorize(params[:code])
             redirect settings.logined_uri
           else
             redirect settings.error_uri
