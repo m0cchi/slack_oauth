@@ -66,6 +66,16 @@ end
 
 ```
 
+## simple access control
+```ruby
+before do
+  redirect_page = '/oauth'
+  other_page = '/top_page'
+  unless authorized? || [redirect_page, other_page].include?(request.path_info)
+    redirect get_authentication_url
+  end
+end
+```
 
 ## Contributing
 
