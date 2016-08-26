@@ -7,7 +7,7 @@ module SlackOauth
   module Driver
     module Helper
 
-      def authorize(code)
+      def request_oauth_access(code)
         uri = URI.parse('https://slack.com/api/oauth.access')
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = true
@@ -23,16 +23,21 @@ module SlackOauth
         end
 
         req.set_form_data(params)
-        res = JSON.parse(http.request(req).body)
+        body = http.request(req).body
+        JSON.parse(body)
+      end
 
-        session[:slack_authorized] = res['ok'] && settings.slack_allowed_teams.include?(res['team_name'])
-
+      def authorize(code)
+        credential = request_oauth_access(code)
+        session[:slack_authorized] = credential['ok'] && settings.slack_allowed_teams.include?(credential['team_name'])
+        
         if session[:slack_authorized]
-          session[:slack_team] = res['team_name']
-          session[:slack_access_token] = res['access_token']
-          session[:slack_user_id] = res['user_id']
-          session[:slack_team_id] = res['team_id']
+          session[:slack_team] = credential['team_name']
+          session[:slack_access_token] = credential['access_token']
+          session[:slack_user_id] = credential['user_id']
+          session[:slack_team_id] = credential['team_id']
         end
+
         session[:slack_authorized]
       end
 
